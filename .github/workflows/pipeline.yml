@@ -6,8 +6,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout au code
-        uses: actions/checkout@v2
-      - name: Exécution des tests
-        run: npm test
+      steps:
+        - name: Checkout au code
+          uses: actions/checkout@v4
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: 20
+            cache: 'npm'
+        - name: Installation des dependances
+          run: npm ci
+        - name: Exécution des tests
+          run: npm test
