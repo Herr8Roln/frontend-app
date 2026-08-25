@@ -1,0 +1,13 @@
+name: Nom_du_Workflow
+  on:
+    push:
+      branches:
+        - main
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout au code
+          uses: actions/checkout@v2
+        - name: Exécution des tests
+          run: npm test
