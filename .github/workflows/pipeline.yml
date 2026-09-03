@@ -62,6 +62,6 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            cd /home/user/devops-script/frontend
+            cd /home/user/devops-scripts/frontend
             sudo docker compose pull frontend-app
             sudo docker compose up -d --force-recreate frontend-app
