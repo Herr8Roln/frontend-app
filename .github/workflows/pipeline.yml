@@ -19,15 +19,13 @@ jobs:
         with:
           node-version: "18"
           cache: npm
-          cache-dependency-path: frontend-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
-        working-directory: frontend-app
 
       - name: Run tests
         run: npm run test -- --run
-        working-directory: frontend-app
 
   docker-push:
     runs-on: ubuntu-latest
@@ -45,7 +43,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest -t ${{ secrets.DOCKER_USERNAME }}/frontend-app:${{ github.sha }} frontend-app
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest -t ${{ secrets.DOCKER_USERNAME }}/frontend-app:${{ github.sha }} .
 
       - name: Push Docker image
         run: |
