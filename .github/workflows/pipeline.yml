@@ -1,20 +1,69 @@
-name: Nom_du_Workflow
+name: Frontend CI/CD
+
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
-  build:
+  unit-test:
     runs-on: ubuntu-latest
+
     steps:
-        - name: Checkout au code
-          uses: actions/checkout@v4
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: 20
-            cache: 'npm'
-        - name: Installation des dependances
-          run: npm ci
-        - name: Exécution des tests
-          run: npm test
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: npm
+          cache-dependency-path: frontend-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend-app
+
+      - name: Run tests
+        run: npm run test -- --run
+        working-directory: frontend-app
+
+  docker-push:
+    runs-on: ubuntu-latest
+    needs: unit-test
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest -t ${{ secrets.DOCKER_USERNAME }}/frontend-app:${{ github.sha }} frontend-app
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker-push
+
+    steps:
+      - name: Deploy frontend to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd /home/user/devops-script/frontend
+            sudo docker compose pull frontend-app
+            sudo docker compose up -d --force-recreate frontend-app
