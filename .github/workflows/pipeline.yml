@@ -49,10 +49,14 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-  
+
   trivy-image-security-scan-job:
     runs-on: ubuntu-latest
-    steps:      
+    needs:
+      - sonarQube-test
+      - unit-test
+
+    steps:
       - name: Checkout Code
         uses: actions/checkout@v4
       - name: Install dependencies
@@ -68,8 +72,7 @@ jobs:
           docker build -t ${{ secrets.IMAGE_NAME }} .
           trivy image ${{ secrets.IMAGE_NAME }}
 
-           trivy fs .  # solution alternative 
-
+           trivy fs .  # solution alternative
 
   docker-push:
     runs-on: ubuntu-latest

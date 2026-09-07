@@ -22,8 +22,8 @@ RUN npm run build
 
 
 FROM  --platform=linux/amd64 nginx:alpine
-# Upgrade libexpat to patched version (fixes CVE-2026-45186)
-RUN apk upgrade --no-cache libexpat
+# Upgrade base packages so security fixes are included in the runtime image.
+RUN apk upgrade --no-cache libexpat libuuid util-linux
 # Copy the build artifacts from the build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 # NGINX default configuration file
